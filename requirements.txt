@@ -2,3 +2,6 @@ opencv-python
 mediapipe
 pyside6
 numpy
+panda3d
+panda3d-gltf
+mss
