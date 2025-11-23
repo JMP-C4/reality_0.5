@@ -74,7 +74,7 @@ class GestureController:
             action = "pause"
             payload = {"target": "actor"}
         elif gesture.kind == "pinch":
-            # Zoom
+            # Zoom acercar
             action = "zoom"
             payload = {"delta": gesture.payload.get("strength", 0.15)}
         elif gesture.kind == "point":
@@ -82,13 +82,17 @@ class GestureController:
             action = "rotate"
             payload = {"axis": "y", "degrees": 12.0 * (gesture.payload.get("direction", 1))}
         elif gesture.kind == "two_fingers":
-            # Atrás (S)
+            # Retroceder
             action = "move"
             payload = {"direction": "back", "speed": 1.0}
         elif gesture.kind == "three_fingers":
             # Reanudar movimiento/animación
             action = "resume"
             payload = {"target": "actor"}
+        elif gesture.kind == "four_fingers":
+            # Acelerar
+            action = "accelerate"
+            payload = {"factor": 0.5}
 
         if action:
             response = self.bridge.send(action, payload)

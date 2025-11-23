@@ -65,6 +65,11 @@ class Viewer(ShowBase):
         loadPrcFileData("", f"plugin-path {Filename.from_os_specific(str(plugin_dir))}")
         assets_dir = Path(__file__).resolve().parents[1] / "assets"
         loadPrcFileData("", f"model-path {Filename.from_os_specific(str(assets_dir))}")
+        # Ajustes de rendimiento
+        loadPrcFileData("", "sync-video 0")
+        loadPrcFileData("", "framebuffer-multisample 0")
+        loadPrcFileData("", "multisamples 0")
+        loadPrcFileData("", "basic-shaders-only 1")
 
         super().__init__()
         self.disableMouse()
@@ -79,7 +84,7 @@ class Viewer(ShowBase):
         self._terrain_drop = 0.8
         self._follow_offset = (0, -6.5, 2.8)
         self._terrain_flatten = 0.70  # más acostado (~30%)
-        self._tile_overlap = 1.20    # más solape para cerrar separaciones
+        self._tile_overlap = 1.00    # máximo solape para eliminar cualquier rendija
         self._tile_size = (0.0, 0.0)
         self._tile_center_idx = (0, 0)
         self.video_path = video_path
@@ -88,11 +93,12 @@ class Viewer(ShowBase):
         self._cmd_move_dir = 0  # -1 back, 0 stop, 1 forward
         self._cmd_paused = False
         self._cmd_zoom_factor = 1.0
+        self._speed_mult = 1.0
 
         if pepper:
             # Actor solo para Pepper (sin terreno), escala grande y centrado
             actor_model = actor_path or scene_path
-            self.actor = self._load_np(actor_model, scale=scale * 1.8)
+            self.actor = self._load_np(actor_model, scale=scale * 15.0)
             self.actor.reparentTo(self.render)
             self.actor.setPos(0, 0, 0)
             self.actor.setH(90)
@@ -109,7 +115,7 @@ class Viewer(ShowBase):
 
             # Actor (maquinaria)
             actor_model = actor_path or scene_path
-            self.actor = self._load_np(actor_model, scale=scale * 0.5)
+            self.actor = self._load_np(actor_model, scale=scale *0.6)
             self.actor.reparentTo(self.render)
             self._place_actor_on_terrain(self.actor, self.terrain)
             # Orientación frontal por defecto
@@ -122,7 +128,7 @@ class Viewer(ShowBase):
             # Modo simple
             self.model = self._load_np(scene_path, scale=scale)
             self.model.reparentTo(self.render)
-            self.model.setPos(0, 10, -1)
+            self.model.setPos(0, 0, 0)
 
         # Luces
         ambient = AmbientLight("ambient")
@@ -189,7 +195,7 @@ class Viewer(ShowBase):
         if self.cam and self.cam.node().getDisplayRegion(0):
             self.cam.node().getDisplayRegion(0).setActive(False)
 
-        rig = CameraRig(distance=12.0, height=4.0)
+        rig = CameraRig(distance=10.0, height=8.0)
         views = rig.build_views()
         layout = {
             "front": (0.33, 0.66, 0.66, 1.0),
@@ -255,7 +261,7 @@ class Viewer(ShowBase):
                 move_vec -= 1.0
             move_vec += self._cmd_move_dir
             if move_vec != 0:
-                dist = move_vec * self.move_speed * dt
+                dist = move_vec * self.move_speed * self._speed_mult * dt
                 self.actor.setY(self.actor, -dist)
 
         self._update_follow_camera()
@@ -375,9 +381,11 @@ class Viewer(ShowBase):
             self.actor.setH(self.actor.getH() + deg)
         elif action == "zoom":
             delta = float(payload.get("delta", 0.0))
-            # Ajusta offset de cámara (más cerca/lejos)
             x, y, z = self._follow_offset
-            factor = max(0.5, min(2.0, 1.0 - delta * 0.5))
+            if delta >= 0:
+                factor = max(0.3, 1.0 - delta * 0.5)  # acercar
+            else:
+                factor = min(3.0, 1.0 + abs(delta) * 0.5)  # alejar
             self._follow_offset = (x, y * factor, z * factor)
             self._setup_follow_camera()
         elif action == "pause":
@@ -385,6 +393,9 @@ class Viewer(ShowBase):
             self._cmd_move_dir = 0
         elif action == "resume":
             self._cmd_paused = False
+        elif action == "accelerate":
+            factor = float(payload.get("factor", 0.5))
+            self._speed_mult = max(0.5, min(3.0, self._speed_mult + factor))
 
     def _setup_video_plane(self, video_path: Path):
         """Crea un plano con textura de video (mp4) en la escena."""

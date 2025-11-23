@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         main_layout = QVBoxLayout(main_widget)
         self.setCentralWidget(main_widget)
 
-        title_label = QLabel("Control por Gestos - Holograma (v2)")
+        title_label = QLabel("Control por Gestos - Holograma")
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setFont(QFont("Segoe UI", 20, QFont.Bold))
         main_layout.addWidget(title_label)
@@ -102,14 +102,19 @@ class MainWindow(QMainWindow):
         self.gesture_list = QListWidget()
         self.gesture_list.addItems(
             [
-                "🤚 Mano abierta (dorso al frente) → Avanzar",
-                "✊ Puño cerrado → Pausa / Detener actor",
-                "🤏 Pinch (pulgar + índice) → Zoom (más fuerza = más zoom)",
-                "☝️ Índice extendido → Rotar eje Y (mano derecha: horario / izquierda: antihorario)",
-                "✌️ Dos dedos (paz) → Retroceder",
-                "🤟 Tres dedos (índice, medio, pulgar) → Reanudar movimiento",
+                '🤚 Mano abierta -> Avanzar',
+                '✊ Puño -> Pausa / Detener actor',
+                '🤏 Pinch -> Zoom acercar',
+                '☝️ Índice -> Rotar eje Y',
+                '✌️ Dos dedos -> Retroceder',
+                '🤟 Tres dedos -> Reanudar',
+                '✋✋ Cuatro dedos -> Acelerar',
             ]
         )
+        legend_layout.addWidget(self.gesture_list)
+
+        legend_layout.addWidget(self.gesture_list)
+
         legend_layout.addWidget(self.gesture_list)
 
         center_layout.addWidget(legend_frame, 1)

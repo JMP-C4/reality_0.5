@@ -30,7 +30,7 @@ class RealityPipeline:
             self.current_scene = self.scene_manager.load(scene_id)
             return {"status": "scene_loaded", "scene": scene_id}
 
-        if action in {"rotate", "zoom", "move", "pause", "resume"}:
+        if action in {"rotate", "zoom", "move", "pause", "resume", "accelerate"}:
             self._write_command({"action": action, "payload": payload, "ts": time.time()})
             return {"status": "queued", "action": action, "payload": payload}
 

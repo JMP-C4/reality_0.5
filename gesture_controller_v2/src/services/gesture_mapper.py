@@ -64,10 +64,12 @@ class GestureMapper:
         if total_up == 0:
             return GestureEvent(kind="fist", hand=hand_label, confidence=confidence)
         if finger_up[1] and finger_up[2] and total_up == 2:
-            # Dos dedos (paz) -> cambiar escena / next
+            # Dos dedos
             return GestureEvent(kind="two_fingers", hand=hand_label, confidence=confidence)
         if total_up == 3:
             return GestureEvent(kind="three_fingers", hand=hand_label, confidence=confidence)
+        if total_up == 4:
+            return GestureEvent(kind="four_fingers", hand=hand_label, confidence=confidence)
         if finger_up[1] and total_up == 1:
             direction = -1 if hand_label == "Left" else 1
             return GestureEvent(kind="point", hand=hand_label, confidence=confidence, payload={"direction": direction})
